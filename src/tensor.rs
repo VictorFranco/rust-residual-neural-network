@@ -1,5 +1,6 @@
 use crate::matrix::Matrix as Matrix;
 
+#[derive(Debug, Clone)]
 pub struct Tensor {
     pub value: Vec<Matrix>
 }

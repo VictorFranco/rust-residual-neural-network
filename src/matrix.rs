@@ -1,5 +1,6 @@
 use rand::Rng;
 
+#[derive(Debug, Clone)]
 pub struct Matrix {
     pub value: Vec<Vec<f32>>
 }
