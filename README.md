@@ -3,5 +3,8 @@
 
 Residual neural network in Rust for modeling binary numbers.
 
+## Architecture
+![Residual network](https://i.imgur.com/DFw0wRN.png)
+
 ## LICENSE
 [Apache-2.0](LICENSE)
