@@ -38,23 +38,16 @@ impl ResNet {
         let e = std::f32::consts::E;
         let sigmoid = |&x:&f32| 1.0 / (1.0 + e.powf(-x));
         let value = matrix.value.iter().map(|r| r.iter().map(sigmoid).collect()).collect();
-        return Matrix { value };
+        Matrix { value }
     }
 
     pub fn forward(&self, input: &Matrix) -> Matrix {
-        let out1 = Self::activation(
-            Matrix::add(&Matrix::dot(&input, &self.w1), &self.b1)
-        );
-        let out2 = Self::activation(
-            Matrix::add(&Matrix::add(&Matrix::dot(&out1, &self.w2), &self.inputs.value[0]), &self.b2)
-        );
-        let out3 = Self::activation(
-            Matrix::add(&Matrix::add(&Matrix::dot(&out2, &self.w3), &out1), &self.b3)
-        );
-        let out4 = Self::activation(
-            Matrix::add(&Matrix::add(&Matrix::dot(&out3, &self.w4), &out2), &self.b4)
-        );
-        out4
+        let ResNet { w1, b1, w2, b2, w3, b3, w4, b4, .. } = self;
+        let input = input.clone();
+        let out1 = Self::activation(Matrix::dot(&input, &w1) + b1.clone());
+        let out2 = Self::activation(Matrix::dot(&out1, &w2) + b2.clone() + input);
+        let out3 = Self::activation(Matrix::dot(&out2, &w3) + b3.clone() + out1);
+        Self::activation(Matrix::dot(&out3, &w4) + b4.clone() + out2)
     }
 
 }

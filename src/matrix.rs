@@ -1,4 +1,5 @@
 use rand::Rng;
+use std::ops::Add;
 
 #[derive(Debug, Clone)]
 pub struct Matrix {
@@ -48,15 +49,21 @@ impl Matrix {
         return Matrix { value };
     }
 
-    pub fn add(m_a: &Matrix, m_b: &Matrix) -> Matrix {
-        if m_a.value.len() != m_b.value.len() || m_a.value[0].len() != m_b.value[0].len() {
+}
+
+impl Add for Matrix {
+
+    type Output = Matrix;
+
+    fn add(self, m_b: Matrix) -> Matrix {
+        if self.value.len() != m_b.value.len() || self.value[0].len() != m_b.value[0].len() {
             panic!("Addition error");
         }
         let mut value = vec![];
-        for i in 0..m_a.value.len() {
+        for i in 0..self.value.len() {
             let mut row = vec![];
             for j in 0..m_b.value[0].len() {
-                row.push(m_a.value[i][j] + m_b.value[i][j]);
+                row.push(self.value[i][j] + m_b.value[i][j]);
             }
             value.push(row);
         }
