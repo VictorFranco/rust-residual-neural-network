@@ -1,12 +1,7 @@
-use crate::tensor::Tensor as Tensor;
 use crate::matrix::Matrix as Matrix;
+use crate::tensor::Tensor as Tensor;
+use crate::layer::Layer as Layer;
 use rand::SeedableRng;
-
-#[derive(Debug, Clone)]
-pub struct Layer {
-    weights: Matrix,
-    biases: Matrix
-}
 
 #[derive(Debug, Clone)]
 pub struct ResNet {
@@ -18,15 +13,15 @@ pub struct ResNet {
 
 impl ResNet {
 
-    pub fn create_resnet(inputs: &Tensor, labels: &Tensor, seed: u64) -> ResNet {
+    pub fn new(inputs: &Tensor, labels: &Tensor, seed: u64) -> ResNet {
         let inputs = inputs.clone();
         let labels = labels.clone();
         let mut rand = rand::rngs::StdRng::seed_from_u64(seed);
         let layers = vec![
-            Layer { weights: Matrix::random_matrix(4, 4, &mut rand), biases: Matrix::random_matrix(1, 4, &mut rand) },
-            Layer { weights: Matrix::random_matrix(4, 4, &mut rand), biases: Matrix::random_matrix(1, 4, &mut rand) },
-            Layer { weights: Matrix::random_matrix(4, 4, &mut rand), biases: Matrix::random_matrix(1, 4, &mut rand) },
-            Layer { weights: Matrix::random_matrix(4, 4, &mut rand), biases: Matrix::random_matrix(1, 4, &mut rand) }
+            Layer::new(4, 4, &mut rand),
+            Layer::new(4, 4, &mut rand),
+            Layer::new(4, 4, &mut rand),
+            Layer::new(4, 4, &mut rand)
         ];
         ResNet { inputs, labels, rand, layers }
     }

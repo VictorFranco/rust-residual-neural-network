@@ -1,4 +1,3 @@
-use rand::Rng;
 use std::ops::Add;
 
 #[derive(Debug, Clone)]
@@ -7,12 +6,6 @@ pub struct Matrix {
 }
 
 impl Matrix {
-
-    pub fn random_matrix(rows: i32, cols: i32, rng: &mut rand::rngs::StdRng) -> Matrix {
-        Matrix {
-            value: (0..rows).map(|_| (0..cols).map(|_| rng.gen()).collect()).collect()
-        }
-    }
 
     #[allow(dead_code)]
     pub fn size(&self) {

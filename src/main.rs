@@ -1,5 +1,6 @@
 mod matrix;
 mod tensor;
+mod layer;
 mod resnet;
 
 use tensor::Tensor as Tensor;
@@ -24,7 +25,7 @@ fn main() {
     };
 
     let seed = 28;
-    let resnet = ResNet::create_resnet(&inputs, &labels, seed);
+    let resnet = ResNet::new(&inputs, &labels, seed);
 
     println!("{:?}", resnet);
     println!();
