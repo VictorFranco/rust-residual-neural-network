@@ -33,7 +33,7 @@ impl Matrix {
             for j in 0..m_b.value[0].len() {
                 let mut sum = 0.0;
                 for k in 0..m_a.value[0].len() {
-                    sum += m_a.value[i][k] + m_b.value[j][k];
+                    sum += m_a.value[i][k] * m_b.value[k][j];
                 }
                 row.push(sum);
             }
