@@ -61,13 +61,13 @@ impl ResNet {
         for i in 0..labels.value.len() {
             let out = Self::threshold(&outputs.value[i]);
             for j in 0..labels.value[i].value.len() {
-                let mut flag = true;
+                let mut equal = true;
                 for k in 0..labels.value[i].value[j].len() {
                     if labels.value[i].value[j][k] != out.value[j][k] {
-                        flag = false;
+                        equal = false;
                     }
                 }
-                if flag {
+                if equal {
                     sum = sum + 1.0;
                 }
             }
@@ -94,47 +94,49 @@ impl ResNet {
 
     pub fn train(&mut self, lr: f32, epochs: usize) {
         for epoch in 0..epochs {
-            let mut d_weights = vec![Matrix::new(4, 4, 0.0); 4];
-            let mut d_biases = vec![Matrix::new(1, 4, 0.0); 4];
-            for index in 0..self.inputs.value.len() {
+            let input_size = self.inputs.value.len();
+            let mut d_weights = vec![Matrix::new(4, 4, 0.0); self.layers.len()];
+            let mut d_biases = vec![Matrix::new(1, 4, 0.0); self.layers.len()];
+            for index in 0..input_size {
                 let input = self.inputs.value[index].clone();
-                let mut outs: Vec<Matrix> = vec![Matrix::new(1, 4, 0.0);4];
-                let mut logits: Vec<Matrix> = vec![Matrix::new(1, 4, 0.0);4];
+                let mut outs: Vec<Matrix> = vec![];
+                let mut logits: Vec<Matrix> = vec![];
+                let mut delta = Matrix::new(1, 4, 0.0);
 
                 // forward
-                logits[0] = Matrix::dot(&input.clone(), &self.layers[0].weights) + self.layers[0].biases.clone();
-                outs[0] = Self::sigmoid(&logits[0]);
-                logits[1] = Matrix::dot(&outs[0], &self.layers[1].weights) + self.layers[1].biases.clone() + input.clone();
-                outs[1] = Self::sigmoid(&logits[1]);
-                logits[2] = Matrix::dot(&outs[1], &self.layers[2].weights) + self.layers[2].biases.clone() + outs[0].clone();
-                outs[2] = Self::sigmoid(&logits[2]);
-                logits[3] = Matrix::dot(&outs[2], &self.layers[3].weights) + self.layers[3].biases.clone() + outs[1].clone();
-                outs[3] = Self::sigmoid(&logits[3]);
+                for layer in 0..self.layers.len() {
+                    let input_layer = if layer == 0 { input.clone() } else { outs.last().unwrap().clone() };
+                    logits.push(Matrix::dot(&input_layer, &self.layers[layer].weights) + self.layers[layer].biases.clone());
+                    // add residual connections
+                    logits[layer] = match layer {
+                        0 => logits[layer].clone(),
+                        1 => logits[layer].clone() + input.clone(),
+                        _ => logits[layer].clone() + outs[(layer as i32 - 2) as usize].clone()
+                    };
+                    outs.push(Self::sigmoid(&logits[layer]));
+                }
 
                 // backpropagation
-                let error = self.labels.value[index].clone() - outs.last().unwrap().clone();
-                let delta = error * Self::sigmoid_prime(&logits[3]);
-                d_weights[3] = d_weights[3].clone() + Matrix::dot(&outs[2].transpose(), &delta);
-                d_biases[3] = d_biases[3].clone() + delta.clone();
-
-                let delta = Matrix::dot(&delta, &self.layers[3].weights.transpose()) * Self::sigmoid_prime(&logits[2]);
-                d_weights[2] = d_weights[2].clone() + Matrix::dot(&outs[1].transpose(), &delta);
-                d_biases[2] = d_biases[2].clone() + delta.clone();
-
-                let delta = Matrix::dot(&delta, &self.layers[2].weights.transpose()) * Self::sigmoid_prime(&logits[1]);
-                d_weights[1] = d_weights[1].clone() + Matrix::dot(&outs[0].transpose(), &delta);
-                d_biases[1] = d_biases[1].clone() + delta.clone();
-
-                let delta = Matrix::dot(&delta, &self.layers[1].weights.transpose()) * Self::sigmoid_prime(&logits[0]);
-                d_weights[0] = d_weights[0].clone() + Matrix::dot(&input.transpose(), &delta);
-                d_biases[0] = d_biases[0].clone() + delta.clone();
-
+                for layer in (0..self.layers.len()).rev() {
+                    delta = match layer {
+                        n if n == self.layers.len() - 1 => { // last layer
+                            let error = self.labels.value[index].clone() - outs.last().unwrap().clone();
+                            error * Self::sigmoid_prime(&logits[layer])
+                        },  // hidden layers
+                        _ => Matrix::dot(&delta, &self.layers[(layer as i32 + 1) as usize].weights.transpose()) * Self::sigmoid_prime(&logits[layer])
+                    };
+                    let input_layer = if layer == 0 { input.clone() } else { outs[(layer as i32) as usize - 1].clone() };
+                    d_weights[layer] = d_weights[layer].clone() + Matrix::dot(&input_layer.transpose(), &delta);
+                    d_biases[layer] = d_biases[layer].clone() + delta.clone();
+                }
             }
 
             // update parameters
             for layer in 0..self.layers.len() {
-                self.layers[layer].weights = self.layers[layer].weights.clone() + Matrix::scalar_mul(lr / 16.0, d_weights[layer].clone());
-                self.layers[layer].biases = self.layers[layer].biases.clone() + Matrix::scalar_mul(lr / 16.0, d_biases[layer].clone());
+                d_weights[layer] = Matrix::scalar_mul(lr / input_size as f32, d_weights[layer].clone());
+                d_biases[layer] = Matrix::scalar_mul(lr / input_size as f32, d_biases[layer].clone());
+                self.layers[layer].weights = self.layers[layer].weights.clone() + d_weights[layer].clone();
+                self.layers[layer].biases = self.layers[layer].biases.clone() + d_biases[layer].clone();
             }
 
             // testing
