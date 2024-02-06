@@ -44,6 +44,37 @@ impl ResNet {
         sigmoid.clone() * (Matrix::new(logit.value.len(), logit.value[0].len(), 1.0) - sigmoid.clone())
     }
 
+    pub fn mse(labels: &Tensor, outputs: &Tensor) -> f32 {
+        let mut sum = 0.0;
+        for i in 0..labels.value.len() {
+            for j in 0..labels.value[i].value.len() {
+                for k in 0..labels.value[i].value[j].len() {
+                    sum += (labels.value[i].value[j][k] - outputs.value[i].value[j][k]).powf(2.0);
+                }
+            }
+        }
+        return 1.0 / labels.value.len() as f32 * sum;
+    }
+
+    pub fn accuracy(labels: &Tensor, outputs: &Tensor) -> f32 {
+        let mut sum = 0.0;
+        for i in 0..labels.value.len() {
+            let out = Self::threshold(&outputs.value[i]);
+            for j in 0..labels.value[i].value.len() {
+                let mut flag = true;
+                for k in 0..labels.value[i].value[j].len() {
+                    if labels.value[i].value[j][k] != out.value[j][k] {
+                        flag = false;
+                    }
+                }
+                if flag {
+                    sum = sum + 1.0;
+                }
+            }
+        }
+        sum / labels.value.len() as f32
+    }
+
     pub fn forward(&self, input: &Matrix) -> Matrix {
         let input = input.clone();
         let mut outs: Vec<Matrix> = vec![];
@@ -62,7 +93,7 @@ impl ResNet {
     }
 
     pub fn train(&mut self, lr: f32, epochs: usize) {
-        for _ in 0..epochs {
+        for epoch in 0..epochs {
             let mut d_weights = vec![Matrix::new(4, 4, 0.0); 4];
             let mut d_biases = vec![Matrix::new(1, 4, 0.0); 4];
             for index in 0..self.inputs.value.len() {
@@ -104,6 +135,15 @@ impl ResNet {
             for layer in 0..self.layers.len() {
                 self.layers[layer].weights = self.layers[layer].weights.clone() + Matrix::scalar_mul(lr / 16.0, d_weights[layer].clone());
                 self.layers[layer].biases = self.layers[layer].biases.clone() + Matrix::scalar_mul(lr / 16.0, d_biases[layer].clone());
+            }
+
+            // testing
+            if epoch % 10 == 0 {
+                let value = self.inputs.value.iter().map(|x| self.forward(x)).collect();
+                let outputs = Tensor { value };
+                let loss = Self::mse(&self.labels, &outputs);
+                let acc = Self::accuracy(&self.labels, &outputs);
+                println!("epoch: {}/{} loss: {} acc: {}", epoch + 1, epochs, loss, acc);
             }
         }
     }

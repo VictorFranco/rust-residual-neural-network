@@ -26,10 +26,10 @@ fn main() {
 
     let seed = 28;
     let mut resnet = ResNet::new(&inputs, &labels, seed);
-    resnet.train(0.1, 200);
-    println!();
+    resnet.train(0.1, 201);
     let value = inputs.value.iter().map(|x| ResNet::threshold(&resnet.forward(x))).collect();
     let outputs = Tensor { value };
+    println!();
     println!("{}", outputs);
 
 }
