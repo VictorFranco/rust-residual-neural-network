@@ -12,23 +12,24 @@ fn main() {
 
     let inputs = Tensor {
         value: Tensor::vec2matrices([
-                   [[0, 0, 0, 0]], [[0, 0, 0, 1]], [[0, 0, 1, 1]], [[0, 1, 0, 0]], [[0, 1, 1, 1]],
-                   [[1, 0, 0, 0]], [[1, 0, 0, 1]], [[1, 0, 1, 1]], [[1, 1, 0, 0]], [[1, 1, 1, 1]]
-               ].iter().map(array2vec3d).collect())
+            [[0, 0, 0, 0]], [[0, 0, 0, 1]], [[0, 0, 1, 0]], [[0, 0, 1, 1]], [[0, 1, 0, 0]], [[0, 1, 0, 1]], [[0, 1, 1, 0]], [[0, 1, 1, 1]],
+            [[1, 0, 0, 0]], [[1, 0, 0, 1]], [[1, 0, 1, 0]], [[1, 0, 1, 1]], [[1, 1, 0, 0]], [[1, 1, 0, 1]], [[1, 1, 1, 0]], [[1, 1, 1, 1]]
+        ].iter().map(array2vec3d).collect())
     };
 
     let labels = Tensor {
         value: Tensor::vec2matrices([
-                   [[0, 0, 0, 0]], [[0, 0, 0, 1]], [[0, 0, 1, 1]], [[0, 1, 0, 0]], [[0, 1, 1, 1]],
-                   [[1, 0, 0, 0]], [[1, 0, 0, 1]], [[1, 0, 1, 1]], [[1, 1, 0, 0]], [[1, 1, 1, 1]]
-               ].iter().map(array2vec3d).collect())
+            [[0, 0, 0, 0]], [[0, 0, 0, 1]], [[0, 0, 1, 0]], [[0, 0, 1, 1]], [[0, 1, 0, 0]], [[0, 1, 0, 1]], [[0, 1, 1, 0]], [[0, 1, 1, 1]],
+            [[1, 0, 0, 0]], [[1, 0, 0, 1]], [[1, 0, 1, 0]], [[1, 0, 1, 1]], [[1, 1, 0, 0]], [[1, 1, 0, 1]], [[1, 1, 1, 0]], [[1, 1, 1, 1]]
+        ].iter().map(array2vec3d).collect())
     };
 
     let seed = 28;
-    let resnet = ResNet::new(&inputs, &labels, seed);
-
-    println!("{:?}", resnet);
+    let mut resnet = ResNet::new(&inputs, &labels, seed);
+    resnet.train(0.1, 200);
     println!();
-    println!("{}", resnet.forward(&inputs.value[0]));
+    let value = inputs.value.iter().map(|x| ResNet::threshold(&resnet.forward(x))).collect();
+    let outputs = Tensor { value };
+    println!("{}", outputs);
 
 }
