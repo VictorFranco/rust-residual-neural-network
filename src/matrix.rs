@@ -1,4 +1,4 @@
-use std::ops::Add;
+use std::ops::{Add, Sub, Mul};
 
 #[derive(Debug, Clone)]
 pub struct Matrix {
@@ -6,6 +6,12 @@ pub struct Matrix {
 }
 
 impl Matrix {
+
+    pub fn new(rows: usize, cols: usize, value: f32) -> Matrix {
+        Matrix {
+            value: vec![vec![value; cols]; rows]
+        }
+    }
 
     #[allow(dead_code)]
     pub fn size(&self) {
@@ -20,7 +26,22 @@ impl Matrix {
                 value[j][i] = self.value[i][j];
             }
         }
-        return Matrix { value };
+        Matrix { value }
+    }
+
+    pub fn scalar_mul(scalar: f32, matrix: Matrix) -> Matrix {
+        if matrix.value.len() == 0 || matrix.value[0].len() == 0 {
+            panic!("Addition error");
+        }
+        let mut value = vec![];
+        for i in 0..matrix.value.len() {
+            let mut row = vec![];
+            for j in 0..matrix.value[0].len() {
+                row.push(scalar * matrix.value[i][j]);
+            }
+            value.push(row);
+        }
+        Matrix { value }
     }
 
     pub fn dot(m_a: &Matrix, m_b: &Matrix) -> Matrix {
@@ -39,7 +60,7 @@ impl Matrix {
             }
             value.push(row);
         }
-        return Matrix { value };
+        Matrix { value }
     }
 
 }
@@ -48,19 +69,61 @@ impl Add for Matrix {
 
     type Output = Matrix;
 
-    fn add(self, m_b: Matrix) -> Matrix {
-        if self.value.len() != m_b.value.len() || self.value[0].len() != m_b.value[0].len() {
+    fn add(self, matrix: Matrix) -> Matrix {
+        if self.value.len() != matrix.value.len() || self.value[0].len() != matrix.value[0].len() {
             panic!("Addition error");
         }
         let mut value = vec![];
         for i in 0..self.value.len() {
             let mut row = vec![];
-            for j in 0..m_b.value[0].len() {
-                row.push(self.value[i][j] + m_b.value[i][j]);
+            for j in 0..matrix.value[0].len() {
+                row.push(self.value[i][j] + matrix.value[i][j]);
             }
             value.push(row);
         }
-        return Matrix { value };
+        Matrix { value }
+    }
+
+}
+
+impl Sub for Matrix {
+
+    type Output = Matrix;
+
+    fn sub(self, matrix: Matrix) -> Matrix {
+        if self.value.len() != matrix.value.len() || self.value[0].len() != matrix.value[0].len() {
+            panic!("Subtraction error");
+        }
+        let mut value = vec![];
+        for i in 0..self.value.len() {
+            let mut row = vec![];
+            for j in 0..matrix.value[0].len() {
+                row.push(self.value[i][j] - matrix.value[i][j]);
+            }
+            value.push(row);
+        }
+        Matrix { value }
+    }
+
+}
+
+impl Mul for Matrix {
+
+    type Output = Matrix;
+
+    fn mul(self, matrix: Matrix) -> Matrix { // Hadamard product
+        if self.value.len() != matrix.value.len() || self.value[0].len() != matrix.value[0].len() {
+            panic!("Multiplication error");
+        }
+        let mut value = vec![];
+        for i in 0..self.value.len() {
+            let mut row = vec![];
+            for j in 0..matrix.value[0].len() {
+                row.push(self.value[i][j] * matrix.value[i][j]);
+            }
+            value.push(row);
+        }
+        Matrix { value }
     }
 
 }
