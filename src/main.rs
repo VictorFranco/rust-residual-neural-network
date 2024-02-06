@@ -8,6 +8,11 @@ use resnet::ResNet as ResNet;
 
 fn main() {
 
+    // hyperparameters
+    let seed = 74;
+    let epochs = 11;
+    let lr = 1.0;
+
     let array2vec3d = |m: &[[i32; 4];1]| m.iter().map(|r| r.map(|e| e as f32).to_vec()).collect();
 
     let inputs = Tensor {
@@ -24,9 +29,8 @@ fn main() {
         ].iter().map(array2vec3d).collect())
     };
 
-    let seed = 28;
     let mut resnet = ResNet::new(&inputs, &labels, seed);
-    resnet.train(0.1, 201);
+    resnet.train(lr, epochs);
     let value = inputs.value.iter().map(|x| ResNet::threshold(&resnet.forward(x))).collect();
     let outputs = Tensor { value };
     println!();

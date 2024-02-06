@@ -138,7 +138,7 @@ impl ResNet {
             }
 
             // testing
-            if epoch % 10 == 0 {
+            if epoch % 1 == 0 {
                 let value = self.inputs.value.iter().map(|x| self.forward(x)).collect();
                 let outputs = Tensor { value };
                 let loss = Self::mse(&self.labels, &outputs);
