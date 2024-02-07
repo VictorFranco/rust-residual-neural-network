@@ -1,4 +1,4 @@
-use std::ops::{Add, Sub, Mul};
+use std::ops::{Add, AddAssign, Sub, Mul};
 
 #[derive(Debug, Clone)]
 pub struct Matrix {
@@ -61,6 +61,20 @@ impl Add for Matrix {
             .map(|i| (0..self.value[i].len())
             .map(|j| self.value[i][j] + matrix.value[i][j]).collect()).collect();
         Matrix { value }
+    }
+
+}
+
+impl AddAssign for Matrix {
+
+    fn add_assign(&mut self, matrix: Matrix) {
+        if self.value.len() != matrix.value.len() || self.value[0].len() != matrix.value[0].len() {
+            panic!("Addition error");
+        }
+        let value = (0..self.value.len())
+            .map(|i| (0..self.value[i].len())
+            .map(|j| self.value[i][j] + matrix.value[i][j]).collect()).collect();
+        *self = Matrix { value };
     }
 
 }

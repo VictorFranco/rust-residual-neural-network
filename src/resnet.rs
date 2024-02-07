@@ -126,8 +126,8 @@ impl ResNet {
                         _ => Matrix::dot(&delta, &self.layers[(layer as i32 + 1) as usize].weights.transpose()) * Self::sigmoid_prime(&logits[layer])
                     };
                     let input_layer = if layer == 0 { input.clone() } else { outs[(layer as i32) as usize - 1].clone() };
-                    d_weights[layer] = d_weights[layer].clone() + Matrix::dot(&input_layer.transpose(), &delta);
-                    d_biases[layer] = d_biases[layer].clone() + delta.clone();
+                    d_weights[layer] += Matrix::dot(&input_layer.transpose(), &delta);
+                    d_biases[layer] += delta.clone();
                 }
             }
 
@@ -135,8 +135,8 @@ impl ResNet {
             for layer in 0..self.layers.len() {
                 d_weights[layer] = Matrix::scalar_mul(lr / input_size as f32, d_weights[layer].clone());
                 d_biases[layer] = Matrix::scalar_mul(lr / input_size as f32, d_biases[layer].clone());
-                self.layers[layer].weights = self.layers[layer].weights.clone() + d_weights[layer].clone();
-                self.layers[layer].biases = self.layers[layer].biases.clone() + d_biases[layer].clone();
+                self.layers[layer].weights += d_weights[layer].clone();
+                self.layers[layer].biases += d_biases[layer].clone();
             }
 
             // testing
