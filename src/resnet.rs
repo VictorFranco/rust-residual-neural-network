@@ -95,8 +95,9 @@ impl ResNet {
     pub fn train(&mut self, lr: f32, epochs: usize) {
         for epoch in 0..epochs {
             let input_size = self.inputs.value.len();
-            let mut d_weights = vec![Matrix::new(4, 4, 0.0); self.layers.len()];
-            let mut d_biases = vec![Matrix::new(1, 4, 0.0); self.layers.len()];
+            let Layer { in_features, out_features, .. } = self.layers[0];
+            let mut d_weights = vec![Matrix::new(in_features, out_features, 0.0); self.layers.len()];
+            let mut d_biases = vec![Matrix::new(1, out_features, 0.0); self.layers.len()];
             for index in 0..input_size {
                 let input = self.inputs.value[index].clone();
                 let mut outs: Vec<Matrix> = vec![];
