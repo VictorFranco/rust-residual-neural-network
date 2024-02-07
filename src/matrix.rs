@@ -20,12 +20,9 @@ impl Matrix {
 
     #[allow(dead_code)]
     pub fn transpose(&self) -> Matrix {
-        let mut value = vec![vec![0.0; self.value.len()]; self.value[0].len()];
-        for i in 0..self.value.len() {
-            for j in 0..self.value[0].len() {
-                value[j][i] = self.value[i][j];
-            }
-        }
+        let value = (0..self.value[0].len())
+            .map(|i| (0..self.value.len())
+            .map(|j| self.value[j][i]).collect()).collect();
         Matrix { value }
     }
 
@@ -33,14 +30,9 @@ impl Matrix {
         if matrix.value.len() == 0 || matrix.value[0].len() == 0 {
             panic!("Addition error");
         }
-        let mut value = vec![];
-        for i in 0..matrix.value.len() {
-            let mut row = vec![];
-            for j in 0..matrix.value[0].len() {
-                row.push(scalar * matrix.value[i][j]);
-            }
-            value.push(row);
-        }
+        let value = (0..matrix.value.len())
+            .map(|i| (0..matrix.value[i].len())
+            .map(|j| scalar * matrix.value[i][j]).collect()).collect();
         Matrix { value }
     }
 
@@ -48,18 +40,10 @@ impl Matrix {
         if m_a.value[0].len() != m_b.value.len() {
             panic!("Dot product error");
         }
-        let mut value = vec![];
-        for i in 0..m_a.value.len() {
-            let mut row = vec![];
-            for j in 0..m_b.value[0].len() {
-                let mut sum = 0.0;
-                for k in 0..m_a.value[0].len() {
-                    sum += m_a.value[i][k] * m_b.value[k][j];
-                }
-                row.push(sum);
-            }
-            value.push(row);
-        }
+        let value = (0..m_a.value.len())
+            .map(|i| (0..m_b.value[0].len())
+            .map(|j| (0..m_a.value[0].len())
+            .map(|k| m_a.value[i][k] * m_b.value[k][j]).sum()).collect()).collect();
         Matrix { value }
     }
 
@@ -73,14 +57,9 @@ impl Add for Matrix {
         if self.value.len() != matrix.value.len() || self.value[0].len() != matrix.value[0].len() {
             panic!("Addition error");
         }
-        let mut value = vec![];
-        for i in 0..self.value.len() {
-            let mut row = vec![];
-            for j in 0..matrix.value[0].len() {
-                row.push(self.value[i][j] + matrix.value[i][j]);
-            }
-            value.push(row);
-        }
+        let value = (0..self.value.len())
+            .map(|i| (0..self.value[i].len())
+            .map(|j| self.value[i][j] + matrix.value[i][j]).collect()).collect();
         Matrix { value }
     }
 
@@ -94,14 +73,9 @@ impl Sub for Matrix {
         if self.value.len() != matrix.value.len() || self.value[0].len() != matrix.value[0].len() {
             panic!("Subtraction error");
         }
-        let mut value = vec![];
-        for i in 0..self.value.len() {
-            let mut row = vec![];
-            for j in 0..matrix.value[0].len() {
-                row.push(self.value[i][j] - matrix.value[i][j]);
-            }
-            value.push(row);
-        }
+        let value = (0..self.value.len())
+            .map(|i| (0..self.value[i].len())
+            .map(|j| self.value[i][j] - matrix.value[i][j]).collect()).collect();
         Matrix { value }
     }
 
@@ -115,14 +89,9 @@ impl Mul for Matrix {
         if self.value.len() != matrix.value.len() || self.value[0].len() != matrix.value[0].len() {
             panic!("Multiplication error");
         }
-        let mut value = vec![];
-        for i in 0..self.value.len() {
-            let mut row = vec![];
-            for j in 0..matrix.value[0].len() {
-                row.push(self.value[i][j] * matrix.value[i][j]);
-            }
-            value.push(row);
-        }
+        let value = (0..self.value.len())
+            .map(|i| (0..self.value[i].len())
+            .map(|j| self.value[i][j] * matrix.value[i][j]).collect()).collect();
         Matrix { value }
     }
 
